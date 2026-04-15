@@ -3,118 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Generator Dua Dimensi</title>
+    <title>QR Code Generator Elegan</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     
     <style>
+        /* CSS Reset & Dasar */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            padding: 20px; 
-            background-color: #f4f4f9; 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f6f9; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
         }
-        .container { 
-            background: #fff; 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-            display: inline-block; 
+
+        /* Desain Card Utama */
+        .card { 
+            background: #ffffff; 
+            padding: 40px 32px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(14, 88, 166, 0.08); 
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            text-align: center;
         }
+        
+        .card h2 {
+            font-weight: 600;
+            font-size: 22px;
+            margin-bottom: 24px;
+            color: #111;
+        }
+
+        /* Desain Input */
         .input-group { 
-            margin-bottom: 15px; 
+            margin-bottom: 16px; 
             text-align: left;
         }
         .input-group label {
-            font-weight: bold;
-            font-size: 14px;
-            color: #333;
+            display: block;
+            font-weight: 500;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 8px;
         }
         input[type="text"] { 
             width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            box-sizing: border-box; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
+            padding: 12px 16px; 
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            transition: all 0.3s ease;
+            outline: none;
+            background-color: #fafbfc;
+        }
+        input[type="text"]:focus {
+            border-color: #0e58a6;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(14, 88, 166, 0.15);
         }
         
-        /* Tombol Buat QR (Warna diubah sesuai permintaan) */
+        /* Tombol Buat QR */
         #btn-buat { 
-            background-color: #0e58a6; /* Warna baru */
-            color: white; 
-            padding: 12px 20px; 
+            background-color: #0e58a6;
+            color: #ffffff; 
+            padding: 14px; 
             border: none; 
-            border-radius: 4px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold;
+            font-size: 15px; 
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
             width: 100%;
-            transition: background 0.3s;
+            margin-top: 8px;
+            transition: all 0.3s ease;
         }
         #btn-buat:hover { 
-            background-color: #0b4582; 
+            background-color: #0a427c; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 88, 166, 0.2);
         }
 
-        /* Tombol Unduh */
-        #btn-unduh {
-            background-color: #4CAF50; 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold;
-            margin-top: 15px; 
-            display: none; /* Disembunyikan sampai QR dibuat */
-            width: 100%;
-        }
-        #btn-unduh:hover { 
-            background-color: #45a049; 
-        }
-
+        /* Wadah Hasil Canvas */
         #canvas-container { 
-            margin-top: 20px; 
-            border: 1px dashed #ddd; 
-            padding: 10px; 
-            background: #fff; 
-            display: none; /* Disembunyikan sampai QR dibuat */
+            margin-top: 24px; 
+            padding: 16px; 
+            background: #f8fafc; 
+            border-radius: 12px;
+            border: 1px dashed #cbd5e1;
+            display: none; 
+            animation: fadeIn 0.5s ease-in-out;
         }
         canvas { 
             max-width: 100%; 
             height: auto;
+            border-radius: 8px;
+        }
+
+        /* Tombol Unduh (Gaya Elegan / Outline) */
+        #btn-unduh {
+            background-color: transparent; 
+            color: #0e58a6; 
+            padding: 14px; 
+            border: 2px solid #0e58a6; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 15px; 
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            margin-top: 16px; 
+            display: none; 
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        #btn-unduh:hover { 
+            background-color: #0e58a6; 
+            color: #ffffff;
+        }
+
+        /* Animasi Muncul */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>QR Code Generator</h2>
+    <div class="card">
+        <h2>Buat QR Code</h2>
         
         <div class="input-group">
-            <label>Teks / URL Tujuan</label>
-            <input type="text" id="input-teks" placeholder="Contoh: https://website-anda.com">
+            <label>Teks atau URL Tujuan</label>
+            <input type="text" id="input-teks" placeholder="Masukkan link atau teks...">
         </div>
         
         <div class="input-group">
-            <label>Judul QR Code (Nama File)</label>
-            <input type="text" id="input-judul" placeholder="Contoh: Profil Saya">
+            <label>Judul File & QR Code</label>
+            <input type="text" id="input-judul" placeholder="Contoh: Website Perusahaan">
         </div>
         
-        <button id="btn-buat" onclick="buatQR()">Buat QR</button>
+        <button id="btn-buat" onclick="buatQR()">Generate QR Code</button>
         
         <div id="canvas-container">
             <canvas id="qr-canvas" width="400" height="450"></canvas>
         </div>
 
-        <button id="btn-unduh" onclick="unduhQR()">Unduh Gambar (.png)</button>
+        <button id="btn-unduh" onclick="unduhQR()">Simpan sebagai PNG</button>
     </div>
 
     <script>
-        // Link logo sesuai permintaan Anda
         const logoUrl = "https://lh3.googleusercontent.com/d/196-yYlDwDc-tUVDTslzPAlBWTmf4ZbWg";
         
         function buatQR() {
@@ -122,56 +171,57 @@
             const judul = document.getElementById("input-judul").value;
             
             if (!teks) {
-                alert("Harap masukkan Teks atau URL tujuan!");
+                alert("Mohon masukkan Teks atau URL tujuan terlebih dahulu.");
                 return;
             }
 
             const canvas = document.getElementById("qr-canvas");
             const ctx = canvas.getContext("2d");
 
-            // 1. Bersihkan dan buat background putih pada canvas
+            // 1. Latar Belakang Canvas (Putih Bersih)
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Gambar Judul di bagian atas canvas
-            ctx.fillStyle = "#000000";
-            ctx.font = "bold 24px Arial";
+            // 2. Menggambar Judul (Font senada)
+            ctx.fillStyle = "#111111";
+            ctx.font = "bold 22px 'Inter', Arial, sans-serif";
             ctx.textAlign = "center";
             let teksJudul = judul.trim() === "" ? "QR Code" : judul;
-            // Menempatkan teks di tengah atas
-            ctx.fillText(teksJudul, canvas.width / 2, 40); 
+            ctx.fillText(teksJudul, canvas.width / 2, 45); 
 
-            // 3. Buat QR Code pada elemen canvas sementara
+            // 3. Membuat QR Code di canvas sementara (Level Koreksi H)
             const tempCanvas = document.createElement("canvas");
             QRCode.toCanvas(tempCanvas, teks, {
                 width: 360,
                 margin: 1,
-                errorCorrectionLevel: 'H' // Level 'H' (High) wajib agar QR tetap bisa di-scan meskipun tengahnya tertutup logo
+                color: {
+                    dark: "#000000",  // Warna titik QR
+                    light: "#ffffff"  // Latar QR
+                },
+                errorCorrectionLevel: 'H' 
             }, function (error) {
                 if (error) console.error(error);
                 
-                // Salin hasil QR dari canvas sementara ke canvas utama (Posisinya sedikit ke bawah agar tidak menabrak judul)
-                ctx.drawImage(tempCanvas, 20, 60, 360, 360);
+                // Posisikan QR Code di tengah canvas utama
+                ctx.drawImage(tempCanvas, 20, 65, 360, 360);
 
-                // 4. Tambahkan Logo di tengah
+                // 4. Memasukkan Logo di Tengah
                 const img = new Image();
-                img.crossOrigin = "Anonymous"; // Membantu mencegah error CORS saat download canvas
+                img.crossOrigin = "Anonymous"; 
                 img.src = logoUrl;
                 
                 img.onload = function() {
-                    const logoSize = 80; // Ukuran logo di tengah (80x80 px)
-                    
-                    // Titik tengah canvas untuk logo
+                    const logoSize = 80; 
                     const x = 20 + (360 / 2) - (logoSize / 2);
-                    const y = 60 + (360 / 2) - (logoSize / 2);
+                    const y = 65 + (360 / 2) - (logoSize / 2);
 
-                    // Buat lingkaran putih sebagai bingkai (background) belakang logo
+                    // Buat latar lingkaran putih elegan di belakang logo
                     ctx.fillStyle = "#ffffff";
                     ctx.beginPath();
-                    ctx.arc(x + logoSize/2, y + logoSize/2, (logoSize/2) + 5, 0, 2 * Math.PI);
+                    ctx.arc(x + logoSize/2, y + logoSize/2, (logoSize/2) + 6, 0, 2 * Math.PI);
                     ctx.fill();
 
-                    // Gambar logo ke dalam canvas (dengan potongan lingkaran/bulat)
+                    // Masking logo menjadi bulat
                     ctx.save();
                     ctx.beginPath();
                     ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, Math.PI * 2, true);
@@ -180,7 +230,7 @@
                     ctx.drawImage(img, x, y, logoSize, logoSize);
                     ctx.restore();
 
-                    // Tampilkan kotak hasil dan tombol unduh
+                    // Tampilkan Hasil
                     document.getElementById("canvas-container").style.display = "block";
                     document.getElementById("btn-unduh").style.display = "block";
                 };
@@ -191,11 +241,9 @@
             const canvas = document.getElementById("qr-canvas");
             const judul = document.getElementById("input-judul").value.trim();
             
-            // Logika Nama File: pakai input judul, ganti spasi dengan underscore (_)
             let namaFile = judul === "" ? "QR_Code" : judul;
             namaFile = namaFile.replace(/\s+/g, '_') + ".png"; 
 
-            // Proses unduh file dari canvas
             const link = document.createElement("a");
             link.download = namaFile;
             link.href = canvas.toDataURL("image/png");
