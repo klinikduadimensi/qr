@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Generator Dua Dimensi</title>
+    <title>QR Dua Dimensi</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
@@ -11,11 +11,7 @@
     
     <style>
         /* CSS Reset & Dasar */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f3f6f9; 
@@ -111,23 +107,29 @@
             border-radius: 8px;
         }
 
-        /* Tombol Unduh (Gaya Elegan / Outline) */
-        #btn-unduh {
+        /* Grup Tombol Unduh */
+        .btn-group {
+            display: none; /* Disembunyikan sampai QR dibuat */
+            gap: 12px;
+            margin-top: 16px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Tombol Unduh (Gaya Outline) */
+        .btn-outline {
+            flex: 1; /* Membuat kedua tombol berukuran sama */
             background-color: transparent; 
             color: #0e58a6; 
-            padding: 14px; 
+            padding: 12px; 
             border: 2px solid #0e58a6; 
             border-radius: 8px; 
             cursor: pointer; 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: 600;
             font-family: 'Inter', sans-serif;
-            margin-top: 16px; 
-            display: none; 
-            width: 100%;
             transition: all 0.3s ease;
         }
-        #btn-unduh:hover { 
+        .btn-outline:hover { 
             background-color: #0e58a6; 
             color: #ffffff;
         }
@@ -142,7 +144,7 @@
 <body>
 
     <div class="card">
-        <h2>Buat QR Dua Dimensi</h2>
+        <h2>Buat QR Code</h2>
         
         <div class="input-group">
             <label>Teks atau URL Tujuan</label>
@@ -160,12 +162,19 @@
             <canvas id="qr-canvas" width="400" height="450"></canvas>
         </div>
 
-        <button id="btn-unduh" onclick="unduhQR()">Simpan sebagai PNG</button>
+        <div class="btn-group" id="grup-unduh">
+            <button class="btn-outline" onclick="unduhGambar('png')">Unduh PNG</button>
+            <button class="btn-outline" onclick="unduhGambar('svg')">Unduh SVG</button>
+        </div>
     </div>
 
     <script>
         const logoUrl = "https://lh3.googleusercontent.com/d/196-yYlDwDc-tUVDTslzPAlBWTmf4ZbWg";
         
+        // Variabel global untuk menyimpan data SVG mentah
+        let currentQrSvgData = ""; 
+        let currentLogoBase64 = "";
+
         function buatQR() {
             const teks = document.getElementById("input-teks").value;
             const judul = document.getElementById("input-judul").value;
@@ -178,75 +187,126 @@
             const canvas = document.getElementById("qr-canvas");
             const ctx = canvas.getContext("2d");
 
-            // 1. Latar Belakang Canvas (Putih Bersih)
+            // 1. Latar Belakang Canvas
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Menggambar Judul (Font senada)
+            // 2. Menggambar Judul
             ctx.fillStyle = "#111111";
             ctx.font = "bold 22px 'Inter', Arial, sans-serif";
             ctx.textAlign = "center";
             let teksJudul = judul.trim() === "" ? "QR Code" : judul;
             ctx.fillText(teksJudul, canvas.width / 2, 45); 
 
-            // 3. Membuat QR Code di canvas sementara (Level Koreksi H)
+            // 3. Membuat QR Code di canvas sementara (Untuk PNG)
             const tempCanvas = document.createElement("canvas");
+            
             QRCode.toCanvas(tempCanvas, teks, {
                 width: 360,
                 margin: 1,
-                color: {
-                    dark: "#000000",  // Warna titik QR
-                    light: "#ffffff"  // Latar QR
-                },
+                color: { dark: "#000000", light: "#ffffff" },
                 errorCorrectionLevel: 'H' 
             }, function (error) {
                 if (error) console.error(error);
-                
-                // Posisikan QR Code di tengah canvas utama
                 ctx.drawImage(tempCanvas, 20, 65, 360, 360);
 
-                // 4. Memasukkan Logo di Tengah
-                const img = new Image();
-                img.crossOrigin = "Anonymous"; 
-                img.src = logoUrl;
-                
-                img.onload = function() {
-                    const logoSize = 80; 
-                    const x = 20 + (360 / 2) - (logoSize / 2);
-                    const y = 65 + (360 / 2) - (logoSize / 2);
+                // 4. Generate QR Code ke dalam format String SVG (Untuk fitur Download SVG)
+                QRCode.toString(teks, {
+                    type: 'svg',
+                    margin: 1,
+                    color: { dark: "#000000", light: "#ffffff" },
+                    errorCorrectionLevel: 'H'
+                }, function (err, svgString) {
+                    if (err) console.error(err);
+                    
+                    // Modifikasi tag <svg> bawaan agar ukurannya pas di tata letak kita
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgString, "image/svg+xml");
+                    const svgEl = doc.documentElement;
+                    svgEl.setAttribute("width", "360");
+                    svgEl.setAttribute("height", "360");
+                    svgEl.setAttribute("x", "20");
+                    svgEl.setAttribute("y", "65");
+                    currentQrSvgData = svgEl.outerHTML;
 
-                    // Buat latar lingkaran putih elegan di belakang logo
-                    ctx.fillStyle = "#ffffff";
-                    ctx.beginPath();
-                    ctx.arc(x + logoSize/2, y + logoSize/2, (logoSize/2) + 6, 0, 2 * Math.PI);
-                    ctx.fill();
+                    // 5. Memasukkan Logo di Tengah
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous"; 
+                    img.src = logoUrl;
+                    
+                    img.onload = function() {
+                        // Simpan logo ke Base64 (Untuk disematkan ke dalam file SVG nantinya)
+                        const imgCanvas = document.createElement("canvas");
+                        imgCanvas.width = img.width;
+                        imgCanvas.height = img.height;
+                        imgCanvas.getContext("2d").drawImage(img, 0, 0);
+                        currentLogoBase64 = imgCanvas.toDataURL("image/png");
 
-                    // Masking logo menjadi bulat
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, Math.PI * 2, true);
-                    ctx.closePath();
-                    ctx.clip();
-                    ctx.drawImage(img, x, y, logoSize, logoSize);
-                    ctx.restore();
+                        // Gambar logo di canvas utama (Untuk PNG)
+                        const logoSize = 80; 
+                        const x = 20 + (360 / 2) - (logoSize / 2);
+                        const y = 65 + (360 / 2) - (logoSize / 2);
 
-                    // Tampilkan Hasil
-                    document.getElementById("canvas-container").style.display = "block";
-                    document.getElementById("btn-unduh").style.display = "block";
-                };
+                        ctx.fillStyle = "#ffffff";
+                        ctx.beginPath();
+                        ctx.arc(x + logoSize/2, y + logoSize/2, (logoSize/2) + 6, 0, 2 * Math.PI);
+                        ctx.fill();
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, Math.PI * 2, true);
+                        ctx.closePath();
+                        ctx.clip();
+                        ctx.drawImage(img, x, y, logoSize, logoSize);
+                        ctx.restore();
+
+                        // Tampilkan Hasil & Tombol Unduh
+                        document.getElementById("canvas-container").style.display = "block";
+                        document.getElementById("grup-unduh").style.display = "flex";
+                    };
+                });
             });
         }
 
-        function unduhQR() {
-            const canvas = document.getElementById("qr-canvas");
-            const judul = document.getElementById("input-judul").value.trim();
-            
-            let namaFile = judul === "" ? "QR_Code" : judul;
-            namaFile = namaFile.replace(/\s+/g, '_') + ".png"; 
+        // Fungsi gabungan untuk mengunduh PNG atau SVG
+        function unduhGambar(format) {
+            const judulInput = document.getElementById("input-judul").value.trim();
+            let namaFile = judulInput === "" ? "QR_Code" : judulInput;
+            namaFile = namaFile.replace(/\s+/g, '_'); 
 
             const link = document.createElement("a");
-            link.download = namaFile;
-            link.href = canvas.toDataURL("image/png");
+
+            if (format === 'png') {
+                const canvas = document.getElementById("qr-canvas");
+                link.download = namaFile + ".png";
+                link.href = canvas.toDataURL("image/png");
+            } 
+            else if (format === 'svg') {
+                let judulTeks = judulInput === "" ? "QR Code" : judulInput;
+                
+                // Menyusun kode struktur gambar SVG
+                const svgLengkap = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="400" height="450">
+                        <rect width="400" height="450" fill="#ffffff" />
+                        <text x="200" y="45" font-family="'Inter', Arial, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#111111">${judulTeks}</text>
+                        
+                        ${currentQrSvgData}
+                        
+                        <circle cx="200" cy="245" r="46" fill="#ffffff" />
+                        <clipPath id="logo-clip">
+                            <circle cx="200" cy="245" r="40" />
+                        </clipPath>
+                        <image href="${currentLogoBase64}" x="160" y="205" width="80" height="80" clip-path="url(#logo-clip)" preserveAspectRatio="xMidYMid slice" />
+                    </svg>
+                `;
+
+                // Buat Blob dari string SVG dan siapkan link unduhan
+                const blob = new Blob([svgLengkap], { type: "image/svg+xml;charset=utf-8" });
+                link.download = namaFile + ".svg";
+                link.href = URL.createObjectURL(blob);
+            }
+
+            // Eksekusi Unduhan
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
