@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator Dua Dimensi</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background-color: #f4f4f9; 
+        }
+        .container { 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            display: inline-block; 
+            width: 100%;
+            max-width: 400px;
+        }
+        .input-group { 
+            margin-bottom: 15px; 
+            text-align: left;
+        }
+        .input-group label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+        }
+        
+        /* Tombol Buat QR (Warna diubah sesuai permintaan) */
+        #btn-buat { 
+            background-color: #0e58a6; /* Warna baru */
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        #btn-buat:hover { 
+            background-color: #0b4582; 
+        }
+
+        /* Tombol Unduh */
+        #btn-unduh {
+            background-color: #4CAF50; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            margin-top: 15px; 
+            display: none; /* Disembunyikan sampai QR dibuat */
+            width: 100%;
+        }
+        #btn-unduh:hover { 
+            background-color: #45a049; 
+        }
+
+        #canvas-container { 
+            margin-top: 20px; 
+            border: 1px dashed #ddd; 
+            padding: 10px; 
+            background: #fff; 
+            display: none; /* Disembunyikan sampai QR dibuat */
+        }
+        canvas { 
+            max-width: 100%; 
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>QR Code Generator</h2>
+        
+        <div class="input-group">
+            <label>Teks / URL Tujuan</label>
+            <input type="text" id="input-teks" placeholder="Contoh: https://website-anda.com">
+        </div>
+        
+        <div class="input-group">
+            <label>Judul QR Code (Nama File)</label>
+            <input type="text" id="input-judul" placeholder="Contoh: Profil Saya">
+        </div>
+        
+        <button id="btn-buat" onclick="buatQR()">Buat QR</button>
+        
+        <div id="canvas-container">
+            <canvas id="qr-canvas" width="400" height="450"></canvas>
+        </div>
+
+        <button id="btn-unduh" onclick="unduhQR()">Unduh Gambar (.png)</button>
+    </div>
+
+    <script>
+        // Link logo sesuai permintaan Anda
+        const logoUrl = "https://lh3.googleusercontent.com/d/196-yYlDwDc-tUVDTslzPAlBWTmf4ZbWg";
+        
+        function buatQR() {
+            const teks = document.getElementById("input-teks").value;
+            const judul = document.getElementById("input-judul").value;
+            
+            if (!teks) {
+                alert("Harap masukkan Teks atau URL tujuan!");
+                return;
+            }
+
+            const canvas = document.getElementById("qr-canvas");
+            const ctx = canvas.getContext("2d");
+
+            // 1. Bersihkan dan buat background putih pada canvas
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Gambar Judul di bagian atas canvas
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 24px Arial";
+            ctx.textAlign = "center";
+            let teksJudul = judul.trim() === "" ? "QR Code" : judul;
+            // Menempatkan teks di tengah atas
+            ctx.fillText(teksJudul, canvas.width / 2, 40); 
+
+            // 3. Buat QR Code pada elemen canvas sementara
+            const tempCanvas = document.createElement("canvas");
+            QRCode.toCanvas(tempCanvas, teks, {
+                width: 360,
+                margin: 1,
+                errorCorrectionLevel: 'H' // Level 'H' (High) wajib agar QR tetap bisa di-scan meskipun tengahnya tertutup logo
+            }, function (error) {
+                if (error) console.error(error);
+                
+                // Salin hasil QR dari canvas sementara ke canvas utama (Posisinya sedikit ke bawah agar tidak menabrak judul)
+                ctx.drawImage(tempCanvas, 20, 60, 360, 360);
+
+                // 4. Tambahkan Logo di tengah
+                const img = new Image();
+                img.crossOrigin = "Anonymous"; // Membantu mencegah error CORS saat download canvas
+                img.src = logoUrl;
+                
+                img.onload = function() {
+                    const logoSize = 80; // Ukuran logo di tengah (80x80 px)
+                    
+                    // Titik tengah canvas untuk logo
+                    const x = 20 + (360 / 2) - (logoSize / 2);
+                    const y = 60 + (360 / 2) - (logoSize / 2);
+
+                    // Buat lingkaran putih sebagai bingkai (background) belakang logo
+                    ctx.fillStyle = "#ffffff";
+                    ctx.beginPath();
+                    ctx.arc(x + logoSize/2, y + logoSize/2, (logoSize/2) + 5, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Gambar logo ke dalam canvas (dengan potongan lingkaran/bulat)
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(x + logoSize/2, y + logoSize/2, logoSize/2, 0, Math.PI * 2, true);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(img, x, y, logoSize, logoSize);
+                    ctx.restore();
+
+                    // Tampilkan kotak hasil dan tombol unduh
+                    document.getElementById("canvas-container").style.display = "block";
+                    document.getElementById("btn-unduh").style.display = "block";
+                };
+            });
+        }
+
+        function unduhQR() {
+            const canvas = document.getElementById("qr-canvas");
+            const judul = document.getElementById("input-judul").value.trim();
+            
+            // Logika Nama File: pakai input judul, ganti spasi dengan underscore (_)
+            let namaFile = judul === "" ? "QR_Code" : judul;
+            namaFile = namaFile.replace(/\s+/g, '_') + ".png"; 
+
+            // Proses unduh file dari canvas
+            const link = document.createElement("a");
+            link.download = namaFile;
+            link.href = canvas.toDataURL("image/png");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
